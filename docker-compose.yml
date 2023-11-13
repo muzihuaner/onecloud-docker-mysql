@@ -1,0 +1,42 @@
+version: "2"
+
+services:
+  # mysql容器
+  web-mysql:
+    image: beercan1989/arm-mysql
+    container_name: web-mysql
+    volumes:  
+      - /root/db/mysql/data:/var/lib/mysql 
+      - /root/db/mysql/example_db:/var/example_db 
+      - /root/db/mysql/conf.d:/etc/mysql/conf.d
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_DATABASE=test
+    ports:
+      - 3306:3306
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8 --explicit_defaults_for_timestamp
+    networks:
+      - net-mysql
+    restart: always
+      
+  # phpmyadmin容器
+  web-pma:
+    image: phpmyadmin
+    container_name: web-pma
+    ports:
+      - "8081:80"
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+      - PMA_HOST=web-mysql
+      - UPLOAD_LIMIT=300M
+    networks:
+      - net-mysql
+    restart: always
+
+networks:
+  net-mysql:
+    driver: bridge
